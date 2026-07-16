@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import 'firebase_options.dart';
+import 'screens/calculator_screen.dart';
 import 'screens/login_screen.dart';
 
 Future<void> main() async {
@@ -43,18 +44,7 @@ class AuthGate extends StatelessWidget {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
         if (snapshot.hasData) {
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('Calc'),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.logout),
-                  onPressed: () => FirebaseAuth.instance.signOut(),
-                ),
-              ],
-            ),
-            body: const Center(child: Text('Signed in')),
-          );
+          return const CalculatorScreen();
         }
         return const LoginScreen();
       },
