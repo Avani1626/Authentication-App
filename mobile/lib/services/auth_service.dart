@@ -52,6 +52,18 @@ class AuthService {
   }
 }
 
+// min 6 chars, one uppercase, one number, one special char
+String? validatePassword(String? value) {
+  final v = value ?? '';
+  if (v.length < 6) return 'At least 6 characters';
+  if (!RegExp(r'[A-Z]').hasMatch(v)) return 'Add an uppercase letter';
+  if (!RegExp(r'[0-9]').hasMatch(v)) return 'Add a number';
+  if (!RegExp(r'[!@#$%^&*(),.?":{}|<>_\-\[\]\\/;+=~`]').hasMatch(v)) {
+    return 'Add a special character';
+  }
+  return null;
+}
+
 class AuthException implements Exception {
   AuthException(this.message);
   final String message;

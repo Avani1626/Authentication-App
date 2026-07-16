@@ -81,8 +81,12 @@ class _SignupScreenState extends State<SignupScreen> {
                         prefixIcon: Icon(Icons.lock_outline),
                         border: OutlineInputBorder(),
                       ),
-                      validator: (v) =>
-                          (v == null || v.length < 6) ? 'Use at least 6 characters' : null,
+                      validator: validatePassword,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'At least 6 characters, with an uppercase letter, a number, and a special character.',
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
