@@ -30,6 +30,21 @@ class AuthService {
     }
   }
 
+  Future<void> sendEmailVerification() async {
+    final user = _auth.currentUser;
+    if (user == null || user.emailVerified) return;
+    try {
+      await user.sendEmailVerification();
+    } on FirebaseAuthException catch (e) {
+      throw AuthException(_messageFor(e));
+    }
+  }
+
+  Future<bool> refreshEmailVerified() async {
+    await _auth.currentUser?.reload();
+    return _auth.currentUser?.emailVerified ?? false;
+  }
+
   Future<void> signOut() => _auth.signOut();
 
   String _messageFor(FirebaseAuthException e) {
@@ -46,6 +61,8 @@ class AuthService {
         return 'Password is too weak.';
       case 'network-request-failed':
         return 'Network error. Check your connection.';
+      case 'too-many-requests':
+        return 'Too many attempts. Wait a moment and try again.';
       default:
         return e.message ?? 'Something went wrong.';
     }

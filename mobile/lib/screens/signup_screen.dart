@@ -30,6 +30,7 @@ class _SignupScreenState extends State<SignupScreen> {
     setState(() => _loading = true);
     try {
       await _auth.signUp(_email.text, _password.text);
+      await _auth.sendEmailVerification();
       if (mounted) Navigator.of(context).pop();
     } on AuthException catch (e) {
       _showError(e.message);
