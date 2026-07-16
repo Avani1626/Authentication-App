@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 
 import '../services/auth_service.dart';
-import 'signup_screen.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class SignupScreen extends StatefulWidget {
+  const SignupScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
   final _password = TextEditingController();
+  final _confirm = TextEditingController();
   final _auth = AuthService();
   bool _loading = false;
 
@@ -21,6 +21,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     _email.dispose();
     _password.dispose();
+    _confirm.dispose();
     super.dispose();
   }
 
@@ -28,7 +29,8 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
     try {
-      await _auth.signIn(_email.text, _password.text);
+      await _auth.signUp(_email.text, _password.text);
+      if (mounted) Navigator.of(context).pop();
     } on AuthException catch (e) {
       _showError(e.message);
     } finally {
@@ -46,6 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: const Text('Create account')),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -58,14 +61,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Icon(Icons.calculate_outlined, size: 64),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Welcome back',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
-                    const SizedBox(height: 32),
                     TextFormField(
                       controller: _email,
                       keyboardType: TextInputType.emailAddress,
@@ -87,7 +82,19 @@ class _LoginScreenState extends State<LoginScreen> {
                         border: OutlineInputBorder(),
                       ),
                       validator: (v) =>
-                          (v == null || v.isEmpty) ? 'Enter your password' : null,
+                          (v == null || v.length < 6) ? 'Use at least 6 characters' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _confirm,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Confirm password',
+                        prefixIcon: Icon(Icons.lock_outline),
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (v) =>
+                          (v != _password.text) ? 'Passwords do not match' : null,
                     ),
                     const SizedBox(height: 24),
                     FilledButton(
@@ -101,18 +108,12 @@ class _LoginScreenState extends State<LoginScreen> {
                               width: 20,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Text('Sign In'),
+                          : const Text('Create Account'),
                     ),
                     const SizedBox(height: 12),
                     TextButton(
-                      onPressed: _loading
-                          ? null
-                          : () => Navigator.of(context).push(
-                                MaterialPageRoute<void>(
-                                  builder: (_) => const SignupScreen(),
-                                ),
-                              ),
-                      child: const Text("Don't have an account? Sign up"),
+                      onPressed: _loading ? null : () => Navigator.of(context).pop(),
+                      child: const Text('Already have an account? Sign in'),
                     ),
                   ],
                 ),
