@@ -56,6 +56,7 @@ gitignored. See `mobile/README.md` for how to generate it.
 ## Testing
 
 - Backend: `cd backend && npm test` (unit + route tests).
-- App: `cd mobile && flutter analyze` and run through sign up → verify → calculate.
+- App: `cd mobile && flutter analyze` and run through sign up → verify → calculate,
+  then sign out and try Continue with Google.
 
 Full steps are in each folder's README.
