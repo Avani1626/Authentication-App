@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import admin from 'firebase-admin';
 import type { NextFunction, Request, Response } from 'express';
 
-const PROJECT_ID = 'test-project-3ea7d';
+const PROJECT_ID = 'authentication-applicati-23e5b';
 
 function initAdmin() {
   if (admin.apps.length) return;
