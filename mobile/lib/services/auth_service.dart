@@ -1,9 +1,17 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:google_sign_in/google_sign_in.dart';
+
+// the type 3 (web) oauth client from google-services.json. android needs it to
+// get an id token back. must match the firebase project.
+const _serverClientId =
+    '262499727053-pghpuugd124l55d9jglcr50d9hgjonrl.apps.googleusercontent.com';
 
 class AuthService {
   AuthService({FirebaseAuth? auth}) : _auth = auth ?? FirebaseAuth.instance;
 
   final FirebaseAuth _auth;
+  static bool _googleReady = false;
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
   User? get currentUser => _auth.currentUser;
@@ -30,6 +38,33 @@ class AuthService {
     }
   }
 
+  // null means the user backed out, which is not an error.
+  Future<UserCredential?> signInWithGoogle() async {
+    try {
+      // authenticate() is not supported on web, popup is the way there.
+      if (kIsWeb) {
+        return await _auth.signInWithPopup(GoogleAuthProvider());
+      }
+      if (!_googleReady) {
+        await GoogleSignIn.instance.initialize(serverClientId: _serverClientId);
+        _googleReady = true;
+      }
+      final account = await GoogleSignIn.instance.authenticate();
+      final idToken = account.authentication.idToken;
+      if (idToken == null) {
+        throw AuthException('Google did not return a token. Try again.');
+      }
+      return await _auth.signInWithCredential(
+        GoogleAuthProvider.credential(idToken: idToken),
+      );
+    } on GoogleSignInException catch (e) {
+      if (e.code == GoogleSignInExceptionCode.canceled) return null;
+      throw AuthException(_messageForGoogle(e));
+    } on FirebaseAuthException catch (e) {
+      throw AuthException(_messageFor(e));
+    }
+  }
+
   Future<void> sendEmailVerification() async {
     final user = _auth.currentUser;
     if (user == null || user.emailVerified) return;
@@ -45,7 +80,29 @@ class AuthService {
     return _auth.currentUser?.emailVerified ?? false;
   }
 
-  Future<void> signOut() => _auth.signOut();
+  Future<void> signOut() async {
+    // without this google keeps the account cached and the next sign in skips
+    // the picker and silently reuses it.
+    if (!kIsWeb && _googleReady) await GoogleSignIn.instance.signOut();
+    await _auth.signOut();
+  }
+
+  String _messageForGoogle(GoogleSignInException e) {
+    switch (e.code) {
+      case GoogleSignInExceptionCode.canceled:
+        return 'Sign in cancelled.';
+      case GoogleSignInExceptionCode.interrupted:
+      case GoogleSignInExceptionCode.uiUnavailable:
+        return 'Google sign in was interrupted. Try again.';
+      case GoogleSignInExceptionCode.clientConfigurationError:
+      case GoogleSignInExceptionCode.providerConfigurationError:
+        return 'Google sign in is not set up correctly for this build.';
+      case GoogleSignInExceptionCode.userMismatch:
+        return 'That was a different Google account. Try again.';
+      case GoogleSignInExceptionCode.unknownError:
+        return e.description ?? 'Google sign in failed.';
+    }
+  }
 
   String _messageFor(FirebaseAuthException e) {
     switch (e.code) {
@@ -57,6 +114,9 @@ class AuthService {
         return 'Wrong email or password.';
       case 'email-already-in-use':
         return 'An account already exists for that email.';
+      case 'account-exists-with-different-credential':
+        return 'That email already has a password account. Sign in with your '
+            'password instead.';
       case 'weak-password':
         return 'Password is too weak.';
       case 'network-request-failed':
