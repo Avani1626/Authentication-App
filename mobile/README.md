@@ -78,7 +78,7 @@ A release APK needs a signing config, which this project does not have yet.
 `baseUrl` is at the top of `lib/services/api_service.dart`.
 
 - Android emulator: `http://10.0.2.2:3000` (the default here).
-- Web / iOS simulator: `http://localhost:3000`.
+- Web: `http://localhost:3000`.
 - Physical device: your computer's LAN IP, e.g. `http://192.168.1.42:3000`.
 
 ## Testing the flow
@@ -90,17 +90,42 @@ A release APK needs a signing config, which this project does not have yet.
 
 `flutter analyze` should report no issues.
 
-## Firebase config caveat
+## Firebase setup (required on a fresh clone)
 
-The bundled `firebase_options.dart` was generated from the **web** app
-registration, and the `android` block reuses that web `appId`. It is enough for
-email/password auth to work on Android, but it is not a real Android
-registration. To do it properly, register the Android app
-(package name `com.example.calc_app`) in the Firebase console and run:
+**The Android build fails on a fresh clone until you do this.**
+`android/app/google-services.json` is deliberately gitignored, and the
+`com.google.gms.google-services` Gradle plugin refuses to build without it:
 
-```bash
-flutterfire configure
+```
+File google-services.json is missing. The Google Services Plugin cannot function without it.
 ```
 
-That rewrites `firebase_options.dart` and drops `google-services.json` into
-`android/app/`. iOS needs the same treatment with `GoogleService-Info.plist`.
+To generate it you need access to the Firebase project
+(`authentication-applicati-23e5b`). Then:
+
+```bash
+npm install -g firebase-tools
+firebase login
+
+dart pub global activate flutterfire_cli
+export PATH="$PATH":"$HOME/.pub-cache/bin"
+
+flutterfire configure -p authentication-applicati-23e5b --platforms=android,web -a com.avani.authapp
+```
+
+That writes `google-services.json` and regenerates `lib/firebase_options.dart`.
+The generated file is committed, so usually only the JSON is missing.
+
+The Android package is `com.avani.authapp`, set in `android/app/build.gradle.kts`
+as both `namespace` and `applicationId`. It has to match what is registered in
+Firebase, so if you change one, re-run `flutterfire configure`.
+
+Note the app is registered in the Firebase console as `calc_app`, since
+flutterfire takes that name from `pubspec.yaml`. It is only a display label.
+
+## iOS
+
+Not configured. `firebase_options.dart` throws `UnsupportedError` on iOS,
+because only `android` and `web` have been set up. To add it, register an iOS
+app in the console and re-run `flutterfire configure` with `ios` in
+`--platforms`.
