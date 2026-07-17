@@ -6,10 +6,12 @@ calls the backend.
 ## Screens
 
 - **Login / Sign up** — email + password. Sign up enforces a strong password
-  (6+ chars, an uppercase, a number, a special char).
+  (6+ chars, an uppercase, a number, a special char). Login also has a
+  **Continue with Google** button.
 - **Verify email** — after sign up, Firebase emails a verification link. The
   calculator stays locked until the email is verified. This screen auto-checks
-  every few seconds and has a resend button.
+  every few seconds and has a resend button. Google accounts skip this, since
+  Google has already verified the address.
 - **Calculator** — two numbers, add / subtract / multiply. The math runs on the
   backend, which verifies the login first.
 
@@ -87,8 +89,29 @@ A release APK needs a signing config, which this project does not have yet.
 2. Click the link in your inbox. The verify screen moves on by itself.
 3. Enter two numbers, tap Add / Subtract / Multiply, check the result.
 4. Sign out from the calculator app bar and sign back in.
+5. Sign out again and try **Continue with Google**. It should land straight on
+   the calculator, skipping the verify screen.
 
 `flutter analyze` should report no issues.
+
+## Google sign-in
+
+Needs the SHA-1 of the keystore that signed the build registered against the
+Android app in Firebase. Without it Google sign-in fails at the picker with an
+error that does not say why. Debug keystore:
+
+```bash
+keytool -list -v -keystore ~/.android/debug.keystore \
+  -alias androiddebugkey -storepass android -keypass android | grep SHA1
+
+firebase apps:android:sha:create <androidAppId> <sha1> --project authentication-applicati-23e5b
+```
+
+Debug keystores are per machine, so every developer has to add their own. After
+adding one, re-run `flutterfire configure` to refresh `google-services.json`.
+
+`serverClientId` in `lib/services/auth_service.dart` is the type 3 (web) oauth
+client from `google-services.json`. Android needs it to get an id token back.
 
 ## Firebase setup (required on a fresh clone)
 

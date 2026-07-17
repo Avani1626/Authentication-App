@@ -11,6 +11,26 @@ npm run dev        # http://localhost:3000
 
 Scripts: `npm run typecheck`, `npm test`, `npm run build && npm start`.
 
+`PORT` overrides the port, but only if you export it. There is no `dotenv` here,
+so a `.env` file is read by nothing:
+
+```bash
+PORT=4000 npm run dev
+```
+
+## Logs
+
+One line per request, so you can see the app hitting the backend:
+
+```
+GET /health 200 1.6ms
+POST /api/calculate 401 0.3ms
+GET /nope 404 0.4ms
+```
+
+Failed token checks also log the underlying reason, since a bad token and an
+unreachable admin SDK both return the same 401.
+
 ## Endpoints
 
 ### `GET /health`
