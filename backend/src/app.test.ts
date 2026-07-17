@@ -10,7 +10,7 @@ vi.mock('./firebase.js', () => ({
 }));
 
 const { createApp } = await import('./app.js');
-const app = createApp();
+const app = createApp(() => {});
 const auth = { Authorization: 'Bearer test' };
 
 describe('GET /health', () => {
