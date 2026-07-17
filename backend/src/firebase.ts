@@ -29,7 +29,9 @@ export async function verifyToken(req: Request, res: Response, next: NextFunctio
     const decoded = await admin.auth().verifyIdToken(match[1]);
     req.uid = decoded.uid;
     next();
-  } catch {
+  } catch (err) {
+    // surface the real reason: a bad token and an unreachable admin SDK both land here
+    console.warn(`token verification failed: ${err instanceof Error ? err.message : String(err)}`);
     res.status(401).json({ error: 'invalid token' });
   }
 }
