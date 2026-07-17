@@ -47,7 +47,11 @@ the default. On a physical device you have to change `baseUrl` to your LAN IP.
 See `mobile/README.md` for the full walkthrough.
 
 Before signing up, enable Email/Password in the Firebase console:
-Authentication → Sign-in method → Email/Password → Enable.
+Authentication → Get started → Sign-in method → Email/Password → Enable.
+Until that is on, every sign-in fails with `CONFIGURATION_NOT_FOUND`.
+
+On a fresh clone the Android build also needs `google-services.json`, which is
+gitignored. See `mobile/README.md` for how to generate it.
 
 ## Testing
 
