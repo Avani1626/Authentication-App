@@ -33,6 +33,19 @@ cd backend && npm install && npm run dev      # http://localhost:3000
 cd mobile  && flutter pub get && flutter run
 ```
 
+`flutter run` picks whatever device is attached. To target Android, start an
+emulator from Android Studio's Device Manager (or plug in a phone with USB
+debugging on), then:
+
+```bash
+flutter devices                  # find the id
+flutter run -d emulator-5554
+```
+
+On the emulator the backend is reachable at `10.0.2.2:3000`, which is already
+the default. On a physical device you have to change `baseUrl` to your LAN IP.
+See `mobile/README.md` for the full walkthrough.
+
 Before signing up, enable Email/Password in the Firebase console:
 Authentication → Sign-in method → Email/Password → Enable.
 
