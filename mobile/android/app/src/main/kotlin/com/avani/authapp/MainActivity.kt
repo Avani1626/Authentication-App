@@ -1,4 +1,4 @@
-package com.example.calc_app
+package com.avani.authapp
 
 import io.flutter.embedding.android.FlutterActivity
 
